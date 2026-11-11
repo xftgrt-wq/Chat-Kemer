@@ -7,7 +7,6 @@
 #include <string_view>
 
 namespace {
-constexpr std::string_view kModId = "chat-kemer";
 constexpr std::string_view kModuleId = "chat-kemer.main";
 float gButtonScale = 1.0f;
 unsigned gOpacity = 85;
@@ -28,11 +27,16 @@ public:
 
     bool load() {
         getSelf().getLogger().info("Chat Kemer: loaded");
+        return true;
+    }
 
+    bool enable() {
+        // The Mod Menu bridge is available in the enable phase, not load().
+        // Use the runtime package ID instead of assuming its folder casing.
         pl::modmenu::ModuleBuilder module(
             std::string(kModuleId), "Chat Kemer");
         module.description("Six HUD buttons with editable labels, size and opacity")
-            .modId(std::string(kModId))
+            .modId(getSelf().getId())
             .defaultEnabled(true)
             .hideInHudEditor(false)
             .config("button_scale", "Button size", pl::modmenu::ConfigType::SliderFloat, "1.0", "0.6", "1.8")
@@ -48,11 +52,11 @@ public:
                 char* end = nullptr;
                 if (key == "button_scale") {
                     const float parsed = std::strtof(v.c_str(), &end);
-                    if (end != v.c_str() && *end == '\0' && parsed >= 0.6f && parsed <= 1.8f)
+                    if (end != v.c_str() && *end == '\\0' && parsed >= 0.6f && parsed <= 1.8f)
                         gButtonScale = parsed;
                 } else if (key == "opacity") {
                     const long parsed = std::strtol(v.c_str(), &end, 10);
-                    if (end != v.c_str() && *end == '\0' && parsed >= 20 && parsed <= 100)
+                    if (end != v.c_str() && *end == '\\0' && parsed >= 20 && parsed <= 100)
                         gOpacity = static_cast<unsigned>(parsed);
                 } else {
                     for (std::size_t i = 0; i < gButtonLabels.size(); ++i) {
@@ -74,30 +78,22 @@ public:
         if (!module.registerModule()) {
             getSelf().getLogger().error(
                 "Chat Kemer: Mod Menu module registration failed");
-            return false;
+            // Keep the native mod loaded so the launcher does not reject the
+            // entire package because its optional menu integration failed.
+            return true;
         }
 
         moduleRegistered_ = true;
-        return true;
-    }
-
-    bool enable() {
-        if (!moduleRegistered_) {
-            getSelf().getLogger().error(
-                "Chat Kemer: module was not registered");
-            return false;
-        }
         if (!registerButtons()) {
             getSelf().getLogger().error(
-                "Chat Kemer: HUD button registration failed");
-            return false;
+                "Chat Kemer: HUD button registration failed; module remains loaded");
+            return true;
         }
         buttonsRegistered_ = true;
         getSelf().getLogger().info(
-            "Chat Kemer: six black/white HUD buttons registered");
+            "Chat Kemer: module and six black/white HUD buttons registered");
         return true;
     }
-
     bool disable() {
         unregisterButtons();
         buttonsRegistered_ = false;
@@ -119,7 +115,7 @@ private:
             const std::string id = "chat-kemer.button." + std::to_string(i + 1);
             pl::modmenu::ButtonBuilder button(id, gButtonLabels[i]);
             button.moduleId(std::string(kModuleId))
-                .modId(std::string(kModId))
+                .modId(getSelf().getId())
                 .label(gButtonLabels[i])
                 .behavior(pl::modmenu::ButtonBehavior::Click)
                 .defaultVisible(true)
