@@ -24,7 +24,7 @@ jobs:
       - name: Install Android NDK
         uses: nttld/setup-ndk@v1
         with:
-          ndk-version: r27c
+          ndk-version: r28c
           add-to-path: false
       - name: Build and validate LeviPack
         run: bash ./scripts/build-android.sh
