@@ -2,12 +2,16 @@
 #include <pl/ModMenu.hpp>
 
 #include <array>
+#include <algorithm>
+#include <cstdlib>
 #include <string>
 #include <string_view>
 
 namespace {
 constexpr std::string_view kModId = "chat-kemer";
 constexpr std::string_view kModuleId = "chat-kemer.main";
+float gButtonScale = 1.0f;
+unsigned gOpacity = 85;
 
 class ChatKemerMod {
 public:
@@ -28,7 +32,22 @@ public:
         module.description("Six configurable-position HUD buttons")
             .modId(std::string(kModId))
             .defaultEnabled(true)
-            .hideInHudEditor(false);
+            .hideInHudEditor(false)
+            .config("button_scale", "Button size", pl::modmenu::ConfigType::SliderFloat, "1.0", "0.6", "1.8")
+            .config("opacity", "Button opacity", pl::modmenu::ConfigType::SliderInt, "85", "20", "100")
+            .onConfigChanged([](std::string_view, std::string_view key, std::string_view value) {
+                const std::string v(value);
+                char* end = nullptr;
+                if (key == "button_scale") {
+                    const float parsed = std::strtof(v.c_str(), &end);
+                    if (end != v.c_str() && *end == '\\0' && parsed >= 0.6f && parsed <= 1.8f)
+                        gButtonScale = parsed;
+                } else if (key == "opacity") {
+                    const long parsed = std::strtol(v.c_str(), &end, 10);
+                    if (end != v.c_str() && *end == '\\0' && parsed >= 20 && parsed <= 100)
+                        gOpacity = static_cast<unsigned>(parsed);
+                }
+            });
 
         if (!module.registerModule()) {
             getSelf().getLogger().error(
@@ -62,10 +81,10 @@ public:
                 .behavior(pl::modmenu::ButtonBehavior::Click)
                 .defaultVisible(true)
                 .stylePreset(pl::modmenu::ButtonStylePreset::Keycap)
-                .styleColors(0xFF202020u, 0xFFFFFFFFu, 0xFFFFFFFFu)
+                .styleColors(((gOpacity * 255u / 100u) << 24) | 0x00202020u, 0xFFFFFFFFu, 0xFFFFFFFFu)
                 .textColor(0xFFFFFFFFu)
                 .activeTextColor(0xFF111111u)
-                .sizeScale(1.0f, 1.0f)
+                .sizeScale(gButtonScale, gButtonScale)
                 .onEvent([this, i](std::string_view, pl::modmenu::ButtonEvent event,
                                    float) {
                     if (event == pl::modmenu::ButtonEvent::Click) {
