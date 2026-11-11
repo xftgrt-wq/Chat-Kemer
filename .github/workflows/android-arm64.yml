@@ -27,7 +27,7 @@ jobs:
           ndk-version: r27c
           add-to-path: false
       - name: Build and validate LeviPack
-        run: ./scripts/build-android.sh
+        run: bash ./scripts/build-android.sh
       - name: Upload LeviLauncher package
         uses: actions/upload-artifact@v4
         with:
