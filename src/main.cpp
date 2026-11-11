@@ -102,8 +102,7 @@ public:
             pl::modmenu::unregisterModule(kModuleId);
             return false;
         }
-        registerHudEditorElements();
-        logger.info("Chat Kemer: six HUD buttons and HUD Editor entries registered");
+                logger.info("Chat Kemer: six HUD buttons and HUD Editor entries registered");
         return true;
     }
 
@@ -111,7 +110,6 @@ public:
         for (std::size_t i = 0; i < commands_.size(); ++i) {
             pl::modmenu::unregisterButton(buttonId(i));
         }
-        pl::modmenu::submitHudEditorElements(kModuleId, {});
         pl::modmenu::unregisterModule(kModuleId);
         return true;
     }
@@ -166,33 +164,11 @@ private:
         return true;
     }
 
-    void registerHudEditorElements() {
-        std::array<pl::modmenu::HudEditorElement, 6> elements{};
-        for (std::size_t i = 0; i < elements.size(); ++i) {
-            auto& element = elements[i];
-            element.elementId = buttonId(i);
-            element.displayName = "Chat Kemer — кнопка " + std::to_string(i + 1);
-            element.positionKeyX = "button" + std::to_string(i + 1) + "X";
-            element.positionKeyY = "button" + std::to_string(i + 1) + "Y";
-            element.snapGroup = "chat-kemer-buttons";
-            element.x = 24.0f + static_cast<float>(i % 3) * 60.0f;
-            element.y = 120.0f + static_cast<float>(i / 3) * 60.0f;
-            element.width = 52.0f * buttonScale_;
-            element.height = 52.0f * buttonScale_;
-            element.gridSize = 8.0f;
-            element.snapThreshold = 12.0f;
-            element.gridGap = 4.0f;
-            element.snapFlags = kHudSnap;
-        }
-        pl::modmenu::submitHudEditorElements(kModuleId, elements);
-    }
-
     void refreshButtons() {
         for (std::size_t i = 0; i < commands_.size(); ++i) {
             pl::modmenu::unregisterButton(buttonId(i));
         }
         if (registerButtons()) {
-            registerHudEditorElements();
         } else {
             getSelf().getLogger().error(
                 "Chat Kemer: button refresh failed; some buttons may be unavailable");
