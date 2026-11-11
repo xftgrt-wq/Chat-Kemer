@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "commands": {
+    "type": "array",
+    "items": {
+      "type": "string"
+    },
+    "minItems": 6,
+    "maxItems": 6
+  },
+  "buttonScale": {
+    "type": "number",
+    "minimum": 0.6,
+    "maximum": 1.8
+  },
+  "opacity": {
+    "type": "integer",
+    "minimum": 20,
+    "maximum": 100
+  }
+}
