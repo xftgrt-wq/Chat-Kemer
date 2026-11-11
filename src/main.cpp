@@ -2,7 +2,6 @@
 #include <pl/ModMenu.hpp>
 
 #include <array>
-#include <algorithm>
 #include <cstdlib>
 #include <string>
 #include <string_view>
@@ -12,6 +11,9 @@ constexpr std::string_view kModId = "chat-kemer";
 constexpr std::string_view kModuleId = "chat-kemer.main";
 float gButtonScale = 1.0f;
 unsigned gOpacity = 85;
+std::array<std::string, 6> gButtonLabels{
+    "Chat 1", "Chat 2", "Chat 3", "Chat 4", "Chat 5", "Chat 6"
+};
 
 class ChatKemerMod {
 public:
@@ -29,23 +31,43 @@ public:
 
         pl::modmenu::ModuleBuilder module(
             std::string(kModuleId), "Chat Kemer");
-        module.description("Six configurable-position HUD buttons")
+        module.description("Six HUD buttons with editable labels, size and opacity")
             .modId(std::string(kModId))
             .defaultEnabled(true)
             .hideInHudEditor(false)
             .config("button_scale", "Button size", pl::modmenu::ConfigType::SliderFloat, "1.0", "0.6", "1.8")
             .config("opacity", "Button opacity", pl::modmenu::ConfigType::SliderInt, "85", "20", "100")
-            .onConfigChanged([](std::string_view, std::string_view key, std::string_view value) {
+            .config("button_label_1", "Button 1 label", pl::modmenu::ConfigType::Text, "Chat 1")
+            .config("button_label_2", "Button 2 label", pl::modmenu::ConfigType::Text, "Chat 2")
+            .config("button_label_3", "Button 3 label", pl::modmenu::ConfigType::Text, "Chat 3")
+            .config("button_label_4", "Button 4 label", pl::modmenu::ConfigType::Text, "Chat 4")
+            .config("button_label_5", "Button 5 label", pl::modmenu::ConfigType::Text, "Chat 5")
+            .config("button_label_6", "Button 6 label", pl::modmenu::ConfigType::Text, "Chat 6")
+            .onConfigChanged([this](std::string_view, std::string_view key, std::string_view value) {
                 const std::string v(value);
                 char* end = nullptr;
                 if (key == "button_scale") {
                     const float parsed = std::strtof(v.c_str(), &end);
-                    if (end != v.c_str() && *end == '\0' && parsed >= 0.6f && parsed <= 1.8f)
+                    if (end != v.c_str() && *end == '\\0' && parsed >= 0.6f && parsed <= 1.8f)
                         gButtonScale = parsed;
                 } else if (key == "opacity") {
                     const long parsed = std::strtol(v.c_str(), &end, 10);
-                    if (end != v.c_str() && *end == '\0' && parsed >= 20 && parsed <= 100)
+                    if (end != v.c_str() && *end == '\\0' && parsed >= 20 && parsed <= 100)
                         gOpacity = static_cast<unsigned>(parsed);
+                } else {
+                    for (std::size_t i = 0; i < gButtonLabels.size(); ++i) {
+                        const std::string expected = "button_label_" + std::to_string(i + 1);
+                        if (key == expected && !v.empty() && v.size() <= 32) {
+                            gButtonLabels[i] = v;
+                            if (buttonsRegistered_)
+                                refreshButtons();
+                            break;
+                        }
+                    }
+                }
+                if (key == "button_scale" || key == "opacity") {
+                    if (buttonsRegistered_)
+                        refreshButtons();
                 }
             });
 
@@ -65,19 +87,40 @@ public:
                 "Chat Kemer: module was not registered");
             return false;
         }
+        if (!registerButtons()) {
+            getSelf().getLogger().error(
+                "Chat Kemer: HUD button registration failed");
+            return false;
+        }
+        buttonsRegistered_ = true;
+        getSelf().getLogger().info(
+            "Chat Kemer: six black/white HUD buttons registered");
+        return true;
+    }
 
-        constexpr std::array<const char*, 6> labels{
-            "Chat 1", "Chat 2", "Chat 3",
-            "Chat 4", "Chat 5", "Chat 6"
-        };
+    bool disable() {
+        unregisterButtons();
+        buttonsRegistered_ = false;
+        return true;
+    }
 
-        bool allRegistered = true;
-        for (std::size_t i = 0; i < labels.size(); ++i) {
+    bool unload() {
+        disable();
+        if (moduleRegistered_) {
+            pl::modmenu::unregisterModule(kModuleId);
+            moduleRegistered_ = false;
+        }
+        return true;
+    }
+
+private:
+    bool registerButtons() {
+        for (std::size_t i = 0; i < gButtonLabels.size(); ++i) {
             const std::string id = "chat-kemer.button." + std::to_string(i + 1);
-            pl::modmenu::ButtonBuilder button(id, labels[i]);
+            pl::modmenu::ButtonBuilder button(id, gButtonLabels[i]);
             button.moduleId(std::string(kModuleId))
                 .modId(std::string(kModId))
-                .label(labels[i])
+                .label(gButtonLabels[i])
                 .behavior(pl::modmenu::ButtonBehavior::Click)
                 .defaultVisible(true)
                 .stylePreset(pl::modmenu::ButtonStylePreset::Keycap)
@@ -94,48 +137,33 @@ public:
                 });
 
             if (!button.registerButton()) {
-                allRegistered = false;
                 getSelf().getLogger().error(
                     "Chat Kemer: failed to register HUD button {}", i + 1);
+                unregisterButtons();
+                return false;
             }
         }
-
-        if (!allRegistered) {
-            // Roll back partial registration so a failed enable cannot leave
-            // a subset of buttons active.
-            for (int i = 1; i <= 6; ++i) {
-                pl::modmenu::unregisterButton(
-                    "chat-kemer.button." + std::to_string(i));
-            }
-            buttonsRegistered_ = false;
-            return false;
-        }
-
-        buttonsRegistered_ = true;
-        getSelf().getLogger().info(
-            "Chat Kemer: six black/white HUD buttons registered");
         return true;
     }
 
-    bool disable() {
+    void unregisterButtons() {
         for (int i = 1; i <= 6; ++i) {
             pl::modmenu::unregisterButton(
                 "chat-kemer.button." + std::to_string(i));
         }
+    }
+
+    void refreshButtons() {
+        unregisterButtons();
         buttonsRegistered_ = false;
-        return true;
-    }
-
-    bool unload() {
-        disable();
-        if (moduleRegistered_) {
-            pl::modmenu::unregisterModule(kModuleId);
-            moduleRegistered_ = false;
+        if (registerButtons()) {
+            buttonsRegistered_ = true;
+        } else {
+            getSelf().getLogger().error(
+                "Chat Kemer: button refresh failed; all buttons were removed");
         }
-        return true;
     }
 
-private:
     ll::mod::NativeMod& self_;
     bool moduleRegistered_{false};
     bool buttonsRegistered_{false};
