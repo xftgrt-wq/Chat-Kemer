@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "commands": [
+    "/spawn",
+    "/top",
+    "/home",
+    "/warp",
+    "/kit",
+    "/shop"
+  ],
+  "buttonScale": 1.0,
+  "opacity": 85
+}
