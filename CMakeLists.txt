@@ -22,7 +22,9 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(preloader_android)
 
+find_library(ANDROID_LOG_LIB log REQUIRED)
+
 add_library(ChatKemer SHARED src/main.cpp)
 set_target_properties(ChatKemer PROPERTIES OUTPUT_NAME "ChatKemer")
-target_link_libraries(ChatKemer PRIVATE preloader)
+target_link_libraries(ChatKemer PRIVATE preloader ${ANDROID_LOG_LIB})
 target_link_options(ChatKemer PRIVATE "-Wl,-z,max-page-size=16384")
