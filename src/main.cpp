@@ -2,6 +2,7 @@
 #include <pl/ModMenu.hpp>
 
 #include <array>
+#include <string>
 #include <string_view>
 
 namespace {
