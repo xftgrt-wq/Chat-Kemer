@@ -100,12 +100,21 @@ public:
             }
         }
 
-        buttonsRegistered_ = allRegistered;
-        if (allRegistered) {
-            getSelf().getLogger().info(
-                "Chat Kemer: six black/white HUD buttons registered");
+        if (!allRegistered) {
+            // Roll back partial registration so a failed enable cannot leave
+            // a subset of buttons active.
+            for (int i = 1; i <= 6; ++i) {
+                pl::modmenu::unregisterButton(
+                    "chat-kemer.button." + std::to_string(i));
+            }
+            buttonsRegistered_ = false;
+            return false;
         }
-        return allRegistered;
+
+        buttonsRegistered_ = true;
+        getSelf().getLogger().info(
+            "Chat Kemer: six black/white HUD buttons registered");
+        return true;
     }
 
     bool disable() {
