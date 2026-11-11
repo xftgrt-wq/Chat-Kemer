@@ -102,7 +102,7 @@ public:
             pl::modmenu::unregisterModule(kModuleId);
             return false;
         }
-                logger.info("Chat Kemer: six HUD buttons and HUD Editor entries registered");
+        logger.info("Chat Kemer: six HUD buttons registered");
         return true;
     }
 
@@ -168,8 +168,7 @@ private:
         for (std::size_t i = 0; i < commands_.size(); ++i) {
             pl::modmenu::unregisterButton(buttonId(i));
         }
-        if (registerButtons()) {
-        } else {
+        if (!registerButtons()) {
             getSelf().getLogger().error(
                 "Chat Kemer: button refresh failed; some buttons may be unavailable");
         }
