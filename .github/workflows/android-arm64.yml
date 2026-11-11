@@ -15,8 +15,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install build tools
-        run: sudo apt-get update && sudo apt-get install -y cmake ninja-build zip binutils
+      - name: Verify preinstalled build tools
+        run: |
+          cmake --version
+          ninja --version
+          zip -v | head -n 2
+          llvm-readelf --version || readelf --version
       - name: Install Android NDK
         uses: nttld/setup-ndk@v1
         with:
