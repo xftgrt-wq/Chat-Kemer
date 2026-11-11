@@ -132,9 +132,9 @@ private:
                 .moduleId(std::string(kModuleId))
                 .label(label)
                 .styleColors(
-                    (static_cast<std::uint32_t>(opacity_ * 255 / 100) << 24) | 0x0024282Cu,
-                    (static_cast<std::uint32_t>(opacity_ * 255 / 100) << 24) | 0x004AE0A0u,
-                    0xFF4AE0A0u)
+                    (static_cast<std::uint32_t>(opacity_ * 255 / 100) << 24) | 0x00000000u,
+                    (static_cast<std::uint32_t>(opacity_ * 255 / 100) << 24) | 0x00303030u,
+                    0xFFFFFFFFu)
                 .textColor(0xFFFFFFFFu)
                 .behavior(pl::modmenu::ButtonBehavior::Click)
                 .defaultVisible(true)
