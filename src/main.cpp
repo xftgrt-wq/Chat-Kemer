@@ -14,9 +14,6 @@ constexpr std::array<std::string_view, 6> kDefaultCommands{
     "/spawn", "/top", "/home", "/warp", "/kit", "/shop"};
 constexpr std::string_view kButtonScaleKey = "buttonScale";
 constexpr std::string_view kOpacityKey = "opacity";
-constexpr std::uint32_t kHudSnap = pl::modmenu::HudSnapGrid |
-                                   pl::modmenu::HudSnapElements |
-                                   pl::modmenu::HudSnapScreenCenter;
 
 class ChatKemerMod {
 public:
