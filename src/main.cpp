@@ -52,11 +52,11 @@ public:
                 char* end = nullptr;
                 if (key == "button_scale") {
                     const float parsed = std::strtof(v.c_str(), &end);
-                    if (end != v.c_str() && *end == '\\0' && parsed >= 0.6f && parsed <= 1.8f)
+                    if (end != v.c_str() && *end == '\0' && parsed >= 0.6f && parsed <= 1.8f)
                         gButtonScale = parsed;
                 } else if (key == "opacity") {
                     const long parsed = std::strtol(v.c_str(), &end, 10);
-                    if (end != v.c_str() && *end == '\\0' && parsed >= 20 && parsed <= 100)
+                    if (end != v.c_str() && *end == '\0' && parsed >= 20 && parsed <= 100)
                         gOpacity = static_cast<unsigned>(parsed);
                 } else {
                     for (std::size_t i = 0; i < gButtonLabels.size(); ++i) {
