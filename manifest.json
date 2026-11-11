@@ -2,7 +2,7 @@
   "type": "preload-native",
   "name": "Chat Kemer",
   "author": "Chat Kemer",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "entry": "libChatKemer.so",
   "minecraft_versions": [
     "1.26.60.4"
