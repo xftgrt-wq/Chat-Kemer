@@ -63,15 +63,9 @@ public:
                         const std::string expected = "button_label_" + std::to_string(i + 1);
                         if (key == expected && !v.empty() && v.size() <= 32) {
                             gButtonLabels[i] = v;
-                            if (buttonsRegistered_)
-                                refreshButtons();
                             break;
                         }
                     }
-                }
-                if (key == "button_scale" || key == "opacity") {
-                    if (buttonsRegistered_)
-                        refreshButtons();
                 }
             });
 
